@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Video Hub Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { 
+            --primary: #6366f1; 
+            --bg: #0f172a; 
+            --card-bg: #1e293b; 
+            --glass: rgba(255, 255, 255, 0.05);
+            --text: #f8fafc;
+            --danger: #f43f5e;
+        }
+
+        /* SECURITY & UX */
+        * { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+        input, textarea { user-select: text !important; }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: var(--bg); color: var(--text);
+            margin: 0; padding-top: 130px; padding-bottom: 120px; 
+            overflow-x: hidden;
+        }
+
+        /* AD CONTAINERS */
+        .floating-ad-unit {
+            position: fixed; left: 0; width: 100%; z-index: 5000;
+            background: #ffffff; display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        }
+        #ad-top-wrapper { top: 0; height: 60px; }
+        #ad-bottom-wrapper { bottom: 60px; height: 50px; }
+        .ad-close-btn {
+            position: absolute; right: 5px; top: -5px;
+            background: var(--danger); color: white; border-radius: 50%;
+            width: 22px; height: 22px; font-size: 14px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; border: 2px solid white; font-weight: bold;
+        }
+
+        /* FEED LAYOUT */
+        .header { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(15px); padding: 12px 20px; border-bottom: 1px solid var(--glass); display: flex; justify-content: space-between; align-items: center; position: fixed; top: 60px; width: 100%; z-index: 1000; box-sizing: border-box; }
+        .logo { font-weight: 800; cursor: pointer; background: linear-gradient(to right, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        #videoFeed { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 10px; max-width: 800px; margin: 0 auto; }
+        .video-card { background: var(--card-bg); border-radius: 16px; overflow: hidden; border: 1px solid var(--glass); position: relative; }
+        .video-link { text-decoration: none; color: inherit; display: block; }
+        .video-wrap { width: 100%; aspect-ratio: 9/16; background: #000; overflow: hidden; }
+        video { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+        .btn-main { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; margin-top: 5px; }
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 60px; background: rgba(15, 23, 42, 0.9); border-top: 1px solid var(--glass); display: flex; justify-content: space-around; align-items: center; z-index: 1000; }
+        
+        /* ADMIN PANEL */
+        .btn-delete { display: none; position: absolute; top: 10px; left: 10px; background: var(--danger); color: white; border: none; padding: 5px 10px; border-radius: 8px; font-weight: bold; cursor: pointer; z-index: 20; }
+        #modalAdmin { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:15000; align-items:center; justify-content:center; }
+        .adb-card { background: var(--card-bg); padding: 40px; border-radius: 28px; text-align: center; max-width: 320px; border: 1px solid var(--glass); }
+    </style>
+</head>
+<body>
+
+<div id="ad-top-wrapper" class="floating-ad-unit">
+    <div class="ad-close-btn" onclick="this.parentElement.style.display='none'"></div>
+    <script>atOptions = { 'key' : 'f2fb933435847a2a213752d43fcb220d', 'format' : 'iframe', 'height' : 50, 'width' : 320, 'params' : {} };</script>
+    <script src="https://venisonglum.com/f2fb933435847a2a213752d43fcb220d/invoke.js"></script>
+</div>
+
+<div id="ad-bottom-wrapper" class="floating-ad-unit">
+    <div class="ad-close-btn" onclick="this.parentElement.style.display='none'"></div>
+    <script>atOptions = { 'key' : 'd0bcd47cb69839ad4bbecb8848ecd4ef', 'format' : 'iframe', 'height' : 60, 'width' : 468, 'params' : {} };</script>
+    <script src="https://venisonglum.com/d0bcd47cb69839ad4bbecb8848ecd4ef/invoke.js"></script>
+</div>
+
+<div class="header">
+    <div class="logo" id="mainLogo">VIDEO HUB</div>
+    <div style="font-size:10px; color:#94a3b8;">ONLINE: <span id="visitorCount" style="color:#22c55e;">3.980</span></div>
+</div>
+
+<div id="videoFeed"></div>
+
+<div id="modalAdmin">
+    <div class="adb-card">
+        <h3>Admin Panel</h3>
+        <input type="text" id="vTitle" placeholder="Video Title" style="width:100%; padding:10px; margin:5px 0; border-radius:8px; border:1px solid #334155; background:#0f172a; color:white;">
+        <input type="text" id="vUrl" placeholder="MP4 URL" style="width:100%; padding:10px; margin:5px 0; border-radius:8px; border:1px solid #334155; background:#0f172a; color:white;">
+        <button class="btn-main" onclick="publishPost()">PUBLISH</button>
+        <button class="btn-main" style="background:transparent; color:#94a3b8" onclick="document.getElementById('modalAdmin').style.display='none'">Cancel</button>
+    </div>
+</div>
+
+<div class="bottom-nav">
+    <div onclick="window.scrollTo({top:0, behavior:'smooth'})">🏠</div>
+    <div id="postBtnNav" style="display:none;" onclick="document.getElementById('modalAdmin').style.display='flex'">➕</div>
+    <div onclick="alert('Profile Coming Soon')">👤</div>
+</div>
+
+<script type='text/javascript' src='//venisonglum.com/gj27zdnjq?key=d489b634c061d494a1cd1dc168743343'></script>
+<script>
+    // 1. SECURITY
+    document.onkeydown = function(e) {
+        if (e.keyCode == 123 || (e.ctrlKey && (e.keyCode == 85 || e.shiftKey && (e.keyCode == 73 || e.keyCode == 74 || e.keyCode == 67)))) {
+            return false;
+        }
+    };
+
+    const DATABASE_URL = "https://america1-e98d6-default-rtdb.firebaseio.com/";
+    const ADMIN_PASS = "Dk123";
+    let isAdmin = false;
+    let secretTap = 0;
+
+    // 2. ADMIN LOGIN
+    document.getElementById("mainLogo").addEventListener("click", () => {
+        secretTap++;
+        if(secretTap >= 5) {
+            if(prompt("Password:") === ADMIN_PASS) {
+                isAdmin = true;
+                document.getElementById("postBtnNav").style.display = "block";
+                document.querySelectorAll('.btn-delete').forEach(b => b.style.display = 'block');
+                alert("Admin Active");
+            }
+            secretTap = 0;
+        }
+    });
+
+    // 3. DATABASE FUNCTIONS
+    async function publishPost() {
+        const title = document.getElementById('vTitle').value;
+        const url = document.getElementById('vUrl').value;
+        if(title && url) {
+            await fetch(`${DATABASE_URL}/posts.json`, { method: 'POST', body: JSON.stringify({title, url, time: Date.now()}) });
+            location.reload();
+        }
+    }
+
+    async function deletePost(id) {
+        if(confirm("Hapus?")) {
+            await fetch(`${DATABASE_URL}/posts/${id}.json`, { method: 'DELETE' });
+            location.reload();
+        }
+    }
+
+    // 4. FETCH FEED DENGAN DUKUNGAN KLIK KANAN
+    async function fetchVideos() {
+        const feed = document.getElementById('videoFeed');
+        try {
+            const res = await fetch(`${DATABASE_URL}/posts.json`);
+            const data = await res.json();
+            if(data) {
+                Object.keys(data).reverse().forEach(key => {
+                    const post = data[key];
+                    const card = document.createElement('div');
+                    card.className = 'video-card';
+                    card.innerHTML = `
+                        <button class="btn-delete" style="${isAdmin ? 'display:block' : ''}" onclick="event.preventDefault(); deletePost('${key}')">DELETE</button>
+                        <a href="video.html?url=${encodeURIComponent(post.url)}&title=${encodeURIComponent(post.title)}" class="video-link" target="_blank">
+                            <div class="video-wrap">
+                                <video loop playsinline muted autoplay><source src="${post.url}" type="video/mp4"></video>
+                            </div>
+                            <div style="padding:10px;">
+                                <div style="font-weight:600; font-size:13px; margin-bottom:5px;">${post.title}</div>
+                                <button class="btn-main" style="pointer-events: none;">▶ WATCH NOW</button>
+                            </div>
+                        </a>
+                    `;
+                    feed.appendChild(card);
+                });
+            }
+        } catch(e) {}
+    }
+
+    setInterval(() => {
+        const base = 3980;
+        const flux = Math.floor(Math.random() * 20) - 10;
+        document.getElementById('visitorCount').innerText = (base + flux).toLocaleString();
+    }, 5000);
+
+    window.onload = fetchVideos;
+</script>
+   <!-- Histats.com  START  (aync)-->
+<script type="text/javascript">var _Hasync= _Hasync|| [];
+_Hasync.push(['Histats.start', '1,4626895,4,0,0,0,00010000']);
+_Hasync.push(['Histats.fasi', '1']);
+_Hasync.push(['Histats.track_hits', '']);
+(function() {
+var hs = document.createElement('script'); hs.type = 'text/javascript'; hs.async = true;
+hs.src = ('//s10.histats.com/js15_as.js');
+(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(hs);
+})();</script>
+<noscript><a href="/" target="_blank"><img  src="//sstatic1.histats.com/0.gif?4626895&101" alt="" border="0"></a></noscript>
+<!-- Histats.com  END  -->
+</body>
+</html>
